@@ -2,5 +2,9 @@
 
 ~ Under Construction ~
 
-Uses Asteriods - NeoWs from:
+Uses NeoWs API from:
 https://api.nasa.gov/
+
+```
+npm run dev
+```
