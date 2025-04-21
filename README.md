@@ -1,4 +1,4 @@
-# Near Earth Asteriods
+# Near Earth Asteroids
 
 ~ Under Construction ~
 
