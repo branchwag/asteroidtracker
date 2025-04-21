@@ -6,6 +6,12 @@ interface ShootingStarData {
 	maxLife: number;
 }
 
+interface MousePosition {
+	x: number;
+	y: number;
+	isDragging: boolean;
+}
+
 const EnhancedStarryBackground: React.FC = () => {
 	const mountRef = useRef<HTMLDivElement>(null);
 
@@ -25,10 +31,17 @@ const EnhancedStarryBackground: React.FC = () => {
 		);
 		camera.position.z = 5;
 
+		// Mouse control setup
+		const mouse: MousePosition = {
+			x: 0,
+			y: 0,
+			isDragging: false
+		};
+
 		// Renderer setup
 		const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 		renderer.setSize(window.innerWidth, window.innerHeight);
-		renderer.setClearColor(0x000022); // Dark blue background
+		renderer.setClearColor(0x000000); // Pure black background
 		currentRef.appendChild(renderer.domElement);
 
 		// Create stars with different sizes
@@ -39,15 +52,19 @@ const EnhancedStarryBackground: React.FC = () => {
 			const smallStarGeometry = new THREE.BufferGeometry();
 			const smallStarMaterial = new THREE.PointsMaterial({
 				color: 0xffffff,
-				size: 0.05,
+				size: 0.5,
+				transparent: true,
 			});
 
 			const smallStarVertices: number[] = [];
-			for (let i = 0; i < 5000; i++) {
+			const smallStarOpacities: number[] = [];
+
+			for (let i = 0; i < 15000; i++) { // Increased from 5000 to 15000
 				const x = (Math.random() - 0.5) * 2000;
 				const y = (Math.random() - 0.5) * 2000;
 				const z = (Math.random() - 0.5) * 2000;
 				smallStarVertices.push(x, y, z);
+				smallStarOpacities.push(Math.random());
 			}
 
 			smallStarGeometry.setAttribute(
@@ -56,6 +73,7 @@ const EnhancedStarryBackground: React.FC = () => {
 			);
 
 			const smallStars = new THREE.Points(smallStarGeometry, smallStarMaterial);
+			(smallStars.userData as { opacities: number[] }).opacities = smallStarOpacities;
 			stars.add(smallStars);
 
 			// Medium stars
@@ -63,14 +81,18 @@ const EnhancedStarryBackground: React.FC = () => {
 			const mediumStarMaterial = new THREE.PointsMaterial({
 				color: 0xeeeeff,
 				size: 0.1,
+				transparent: true,
 			});
 
 			const mediumStarVertices: number[] = [];
-			for (let i = 0; i < 2500; i++) {
+			const mediumStarOpacities: number[] = [];
+
+			for (let i = 0; i < 7500; i++) { // Increased from 2500 to 7500
 				const x = (Math.random() - 0.5) * 1500;
 				const y = (Math.random() - 0.5) * 1500;
 				const z = (Math.random() - 0.5) * 1500;
 				mediumStarVertices.push(x, y, z);
+				mediumStarOpacities.push(Math.random());
 			}
 
 			mediumStarGeometry.setAttribute(
@@ -79,6 +101,7 @@ const EnhancedStarryBackground: React.FC = () => {
 			);
 
 			const mediumStars = new THREE.Points(mediumStarGeometry, mediumStarMaterial);
+			(mediumStars.userData as { opacities: number[] }).opacities = mediumStarOpacities;
 			stars.add(mediumStars);
 
 			// Large twinkling stars
@@ -91,7 +114,7 @@ const EnhancedStarryBackground: React.FC = () => {
 
 			const largeStarVertices: number[] = [];
 			const opacities: number[] = [];
-			for (let i = 0; i < 1000; i++) {
+			for (let i = 0; i < 3000; i++) { // Increased from 1000 to 3000
 				const x = (Math.random() - 0.5) * 1000;
 				const y = (Math.random() - 0.5) * 1000;
 				const z = (Math.random() - 0.5) * 1000;
@@ -175,9 +198,27 @@ const EnhancedStarryBackground: React.FC = () => {
 
 			requestAnimationFrame(animate);
 
-			// Rotate stars slightly for subtle movement
-			stars.rotation.x += 0.0001;
-			stars.rotation.y += 0.0002;
+			// Rotate stars slightly for subtle movement (only if not being dragged)
+			if (!mouse.isDragging) {
+				stars.rotation.x += 0.0001;
+				stars.rotation.y += 0.0002;
+			}
+
+			// Handle twinkling effect for small stars
+			const smallStars = stars.children[0] as THREE.Points;
+			const smallOpacities = (smallStars.userData as { opacities: number[] }).opacities;
+
+			if (smallStars.material instanceof THREE.PointsMaterial) {
+				smallStars.material.opacity = Math.sin(time * 0.0005) * 0.3 + 0.7;
+			}
+
+			// Handle twinkling effect for medium stars
+			const mediumStars = stars.children[1] as THREE.Points;
+			const mediumOpacities = (mediumStars.userData as { opacities: number[] }).opacities;
+
+			if (mediumStars.material instanceof THREE.PointsMaterial) {
+				mediumStars.material.opacity = Math.sin(time * 0.0007) * 0.4 + 0.6;
+			}
 
 			// Handle twinkling effect for large stars
 			const largeStars = stars.children[2] as THREE.Points;
@@ -187,6 +228,7 @@ const EnhancedStarryBackground: React.FC = () => {
 				// Oscillate opacity with a sine wave and some randomness
 				opacities[i] += delta * (Math.random() * 0.5);
 				if (largeStars.material instanceof THREE.PointsMaterial) {
+					// More pronounced twinkling for large stars
 					largeStars.material.opacity = Math.sin(time * 0.001) * 0.5 + 0.5;
 				}
 			}
@@ -229,6 +271,12 @@ const EnhancedStarryBackground: React.FC = () => {
 		// Clean up
 		return () => {
 			window.removeEventListener('resize', handleResize);
+
+			// Remove mouse event listeners
+			currentRef.removeEventListener('mousedown', handleMouseDown);
+			window.removeEventListener('mousemove', handleMouseMove);
+			window.removeEventListener('mouseup', handleMouseUp);
+			currentRef.removeEventListener('mouseleave', handleMouseLeave);
 
 			// Remove all shooting stars
 			shootingStars.forEach(star => scene.remove(star));
