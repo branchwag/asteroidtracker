@@ -19,10 +19,8 @@ const EnhancedStarryBackground: React.FC = () => {
 		const currentRef = mountRef.current;
 		if (!currentRef) return;
 
-		// Scene setup
 		const scene = new THREE.Scene();
 
-		// Camera setup
 		const camera = new THREE.PerspectiveCamera(
 			75,
 			window.innerWidth / window.innerHeight,
@@ -31,17 +29,15 @@ const EnhancedStarryBackground: React.FC = () => {
 		);
 		camera.position.z = 5;
 
-		// Mouse control setup
 		const mouse: MousePosition = {
 			x: 0,
 			y: 0,
 			isDragging: false
 		};
 
-		// Renderer setup
 		const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 		renderer.setSize(window.innerWidth, window.innerHeight);
-		renderer.setClearColor(0x000000); // Pure black background
+		renderer.setClearColor(0x000000);
 		currentRef.appendChild(renderer.domElement);
 
 		const createCircleTexture = (): THREE.Texture => {
@@ -49,15 +45,12 @@ const EnhancedStarryBackground: React.FC = () => {
 			const canvas = document.createElement('canvas');
 			canvas.width = size;
 			canvas.height = size;
-
 			const ctx = canvas.getContext('2d');
 			if (!ctx) throw new Error('Canvas 2D context not supported.');
-
 			ctx.beginPath();
 			ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
 			ctx.fillStyle = 'white';
 			ctx.fill();
-
 			const texture = new THREE.CanvasTexture(canvas);
 			texture.minFilter = THREE.LinearFilter;
 			texture.magFilter = THREE.LinearFilter;
@@ -65,109 +58,92 @@ const EnhancedStarryBackground: React.FC = () => {
 			return texture;
 		};
 
-		const createStars = (): THREE.Group => {
-			const stars = new THREE.Group();
+		const createStarLayer = (
+			count: number,
+			color: number,
+			size: number,
+			spread: number,
+			speedMin: number,
+			speedMax: number,
+			amplitude: number
+		): THREE.Points => {
+			const geometry = new THREE.BufferGeometry();
 			const starTexture = createCircleTexture();
-
-			// Small stars (background)
-			const smallStarGeometry = new THREE.BufferGeometry();
-			const smallStarMaterial = new THREE.PointsMaterial({
-				color: 0xffffff,
-				size: 0.6,
+			const material = new THREE.PointsMaterial({
+				color,
+				size,
 				transparent: true,
 				map: starTexture,
 				alphaTest: 0.1,
 				depthWrite: false,
 			});
 
-			const smallStarVertices: number[] = [];
-			const smallStarOpacities: number[] = [];
+			const vertices: number[] = [];
+			const baseOpacities: number[] = [];
+			const twinkleSpeeds: number[] = [];
+			const twinkleOffsets: number[] = [];
 
-			for (let i = 0; i < 15000; i++) {
-				const x = (Math.random() - 0.5) * 2000;
-				const y = (Math.random() - 0.5) * 2000;
-				const z = (Math.random() - 0.5) * 2000;
-				smallStarVertices.push(x, y, z);
-				smallStarOpacities.push(Math.random());
+			for (let i = 0; i < count; i++) {
+				vertices.push(
+					(Math.random() - 0.5) * spread,
+					(Math.random() - 0.5) * spread,
+					(Math.random() - 0.5) * spread
+				);
+				baseOpacities.push(Math.random() * 0.5 + 0.5);
+				twinkleSpeeds.push(Math.random() * (speedMax - speedMin) + speedMin);
+				twinkleOffsets.push(Math.random() * Math.PI * 2);
 			}
 
-			smallStarGeometry.setAttribute(
-				'position',
-				new THREE.Float32BufferAttribute(smallStarVertices, 3)
-			);
+			geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 
-			const smallStars = new THREE.Points(smallStarGeometry, smallStarMaterial);
-			(smallStars.userData as { opacities: number[] }).opacities = smallStarOpacities;
-			stars.add(smallStars);
-
-			// Medium stars
-			const mediumStarGeometry = new THREE.BufferGeometry();
-			const mediumStarMaterial = new THREE.PointsMaterial({
-				color: 0xeeeeff,
-				size: 0.8,
-				transparent: true,
-				map: starTexture,
-				alphaTest: 0.1,
-				depthWrite: false,
-			});
-
-			const mediumStarVertices: number[] = [];
-			const mediumStarOpacities: number[] = [];
-
-			for (let i = 0; i < 7500; i++) {
-				const x = (Math.random() - 0.5) * 1500;
-				const y = (Math.random() - 0.5) * 1500;
-				const z = (Math.random() - 0.5) * 1500;
-				mediumStarVertices.push(x, y, z);
-				mediumStarOpacities.push(Math.random());
-			}
-
-			mediumStarGeometry.setAttribute(
-				'position',
-				new THREE.Float32BufferAttribute(mediumStarVertices, 3)
-			);
-
-			const mediumStars = new THREE.Points(mediumStarGeometry, mediumStarMaterial);
-			(mediumStars.userData as { opacities: number[] }).opacities = mediumStarOpacities;
-			stars.add(mediumStars);
-
-			// Large twinkling stars
-			const largeStarGeometry = new THREE.BufferGeometry();
-			const largeStarMaterial = new THREE.PointsMaterial({
-				color: 0xffffff,
-				size: 0.15,
-				transparent: true,
-				map: starTexture,
-				alphaTest: 0.1,
-				depthWrite: false,
-			});
-
-			const largeStarVertices: number[] = [];
-			const opacities: number[] = [];
-			for (let i = 0; i < 3000; i++) {
-				const x = (Math.random() - 0.5) * 1000;
-				const y = (Math.random() - 0.5) * 1000;
-				const z = (Math.random() - 0.5) * 1000;
-				largeStarVertices.push(x, y, z);
-
-				// Store initial opacity for twinkling effect
-				opacities.push(Math.random());
-			}
-
-			largeStarGeometry.setAttribute(
-				'position',
-				new THREE.Float32BufferAttribute(largeStarVertices, 3)
-			);
-
-			const largeStars = new THREE.Points(largeStarGeometry, largeStarMaterial);
-			// Type assertion to add custom user data
-			(largeStars.userData as { opacities: number[] }).opacities = opacities;
-			stars.add(largeStars);
+			const stars = new THREE.Points(geometry, material);
+			stars.userData = {
+				baseOpacities,
+				twinkleSpeeds,
+				twinkleOffsets,
+				amplitude,
+			};
 
 			return stars;
 		};
 
-		// Create shooting stars
+		const createStars = (): THREE.Group => {
+			const group = new THREE.Group();
+
+			const smallStars = createStarLayer(
+				15000,
+				0xffffff,
+				0.6,
+				2000,
+				0.000001,
+				0.000005,
+				0.005 // Even more subtle twinkle
+			);
+
+			const mediumStars = createStarLayer(
+				7500,
+				0xeeeeff,
+				0.8,
+				1500,
+				0.00001,
+				0.00005,
+				0.03
+			);
+
+			const largeStars = createStarLayer(
+				3000,
+				0xffffff,
+				0.15,
+				1000,
+				0.00005,
+				0.0001,
+				0.2
+			);
+
+			group.add(smallStars, mediumStars, largeStars);
+			return group;
+		};
+
 		const createShootingStar = (): THREE.Line => {
 			const material = new THREE.LineBasicMaterial({
 				color: 0xffffff,
@@ -175,118 +151,96 @@ const EnhancedStarryBackground: React.FC = () => {
 				opacity: 1
 			});
 
-			// Random start and end points
 			const x1 = (Math.random() - 0.5) * 800;
 			const y1 = Math.random() * 400;
 			const x2 = x1 - Math.random() * 200 - 100;
 			const y2 = y1 - Math.random() * 200 - 100;
 
-			const points = [];
-			points.push(new THREE.Vector3(x1, y1, -500));
-			points.push(new THREE.Vector3(x2, y2, -500));
-
+			const points = [new THREE.Vector3(x1, y1, -500), new THREE.Vector3(x2, y2, -500)];
 			const geometry = new THREE.BufferGeometry().setFromPoints(points);
 			const line = new THREE.Line(geometry, material);
 
-			// Store animation data with TypeScript interface
 			line.userData = {
 				lifeTime: 0,
-				maxLife: Math.random() * 1.5 + 0.5, // Random lifetime between 0.5 and 2 seconds
+				maxLife: Math.random() * 1.5 + 0.5
 			} as ShootingStarData;
 
 			return line;
 		};
 
-		// Add stars to the scene
 		const stars = createStars();
 		scene.add(stars);
 
-		// Array to store shooting stars
 		const shootingStars: THREE.Line[] = [];
 
-		// Handle window resize
 		const handleResize = (): void => {
 			const width = window.innerWidth;
 			const height = window.innerHeight;
-
 			camera.aspect = width / height;
 			camera.updateProjectionMatrix();
-
 			renderer.setSize(width, height);
 		};
 
 		window.addEventListener('resize', handleResize);
 
-		// Animation variables
 		let lastTime = 0;
 		let shootingStarTimer = 0;
 
-		// Animation loop
 		const animate = (time: number): void => {
-			const delta = (time - lastTime) / 1000; // Convert to seconds
+			const delta = (time - lastTime) / 1000;
 			lastTime = time;
 
 			requestAnimationFrame(animate);
 
-			// Rotate stars slightly for subtle movement (only if not being dragged)
 			if (!mouse.isDragging) {
 				stars.rotation.x += 0.0001;
 				stars.rotation.y += 0.0002;
 			}
 
-			// Handle twinkling effect for small stars
-			const smallStars = stars.children[0] as THREE.Points;
-			const smallOpacities = (smallStars.userData as { opacities: number[] }).opacities;
+			for (const starLayer of stars.children) {
+				if (starLayer instanceof THREE.Points) {
+					const {
+						baseOpacities,
+						twinkleSpeeds,
+						twinkleOffsets,
+						amplitude
+					} = starLayer.userData as {
+						baseOpacities: number[];
+						twinkleSpeeds: number[];
+						twinkleOffsets: number[];
+						amplitude: number;
+					};
 
-			if (smallStars.material instanceof THREE.PointsMaterial) {
-				smallStars.material.opacity = Math.sin(time * 0.0005) * 0.3 + 0.7;
-			}
+					if (starLayer.material instanceof THREE.PointsMaterial) {
+						const opacities = baseOpacities.map((base, i) => {
+							const speed = twinkleSpeeds[i];
+							const offset = twinkleOffsets[i];
+							return base + Math.sin(time * speed + offset) * amplitude;
+						});
 
-			// Handle twinkling effect for medium stars
-			const mediumStars = stars.children[1] as THREE.Points;
-			const mediumOpacities = (mediumStars.userData as { opacities: number[] }).opacities;
-
-			if (mediumStars.material instanceof THREE.PointsMaterial) {
-				mediumStars.material.opacity = Math.sin(time * 0.0007) * 0.4 + 0.6;
-			}
-
-			// Handle twinkling effect for large stars
-			const largeStars = stars.children[2] as THREE.Points;
-			const opacities = (largeStars.userData as { opacities: number[] }).opacities;
-
-			for (let i = 0; i < opacities.length; i++) {
-				// Oscillate opacity with a sine wave and some randomness
-				opacities[i] += delta * (Math.random() * 0.5);
-				if (largeStars.material instanceof THREE.PointsMaterial) {
-					// More pronounced twinkling for large stars
-					largeStars.material.opacity = Math.sin(time * 0.001) * 0.5 + 0.5;
+						const avgOpacity = opacities.reduce((sum, o) => sum + o, 0) / opacities.length;
+						starLayer.material.opacity = avgOpacity;
+					}
 				}
 			}
 
-			// Manage shooting stars
 			shootingStarTimer -= delta;
 			if (shootingStarTimer <= 0) {
-				// Create a new shooting star
 				const shootingStar = createShootingStar();
 				scene.add(shootingStar);
 				shootingStars.push(shootingStar);
-
-				// Set timer for next shooting star (between 1 and 6 seconds)
 				shootingStarTimer = Math.random() * 5 + 1;
 			}
 
-			// Update and remove shooting stars
 			for (let i = shootingStars.length - 1; i >= 0; i--) {
 				const star = shootingStars[i];
 				const userData = star.userData as ShootingStarData;
 				userData.lifeTime += delta;
 
-				// Fade out shooting star
 				if (star.material instanceof THREE.LineBasicMaterial) {
-					star.material.opacity = 1 - (userData.lifeTime / userData.maxLife);
+					star.material.opacity = 1 - userData.lifeTime / userData.maxLife;
 				}
 
-				// Remove if lifetime exceeded
 				if (userData.lifeTime >= userData.maxLife) {
 					scene.remove(star);
 					shootingStars.splice(i, 1);
@@ -298,27 +252,15 @@ const EnhancedStarryBackground: React.FC = () => {
 
 		animate(0);
 
-		// Clean up
 		return () => {
 			window.removeEventListener('resize', handleResize);
+			shootingStars.forEach((star) => scene.remove(star));
 
-			// Remove mouse event listeners
-			currentRef.removeEventListener('mousedown', handleMouseDown);
-			window.removeEventListener('mousemove', handleMouseMove);
-			window.removeEventListener('mouseup', handleMouseUp);
-			currentRef.removeEventListener('mouseleave', handleMouseLeave);
-
-			// Remove all shooting stars
-			shootingStars.forEach(star => scene.remove(star));
-
-			// Dispose of geometries and materials
-			stars.children.forEach(starGroup => {
+			stars.children.forEach((starGroup) => {
 				if (starGroup instanceof THREE.Points) {
 					starGroup.geometry.dispose();
 					if (starGroup.material instanceof THREE.Material) {
 						starGroup.material.dispose();
-					} else if (Array.isArray(starGroup.material)) {
-						starGroup.material.forEach(material => material.dispose());
 					}
 				}
 			});
@@ -327,7 +269,19 @@ const EnhancedStarryBackground: React.FC = () => {
 		};
 	}, []);
 
-	return <div ref={mountRef} style={{ width: '100%', height: '100%', position: 'fixed', top: 0, left: 0, zIndex: -1 }} />;
+	return (
+		<div
+			ref={mountRef}
+			style={{
+				width: '100%',
+				height: '100%',
+				position: 'fixed',
+				top: 0,
+				left: 0,
+				zIndex: -1
+			}}
+		/>
+	);
 };
 
 export default EnhancedStarryBackground;
