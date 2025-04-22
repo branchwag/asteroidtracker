@@ -73,7 +73,7 @@ const EnhancedStarryBackground: React.FC = () => {
 			const smallStarGeometry = new THREE.BufferGeometry();
 			const smallStarMaterial = new THREE.PointsMaterial({
 				color: 0xffffff,
-				size: 0.5,
+				size: 0.6,
 				transparent: true,
 				map: starTexture,
 				alphaTest: 0.1,
@@ -104,7 +104,7 @@ const EnhancedStarryBackground: React.FC = () => {
 			const mediumStarGeometry = new THREE.BufferGeometry();
 			const mediumStarMaterial = new THREE.PointsMaterial({
 				color: 0xeeeeff,
-				size: 0.1,
+				size: 0.8,
 				transparent: true,
 				map: starTexture,
 				alphaTest: 0.1,
