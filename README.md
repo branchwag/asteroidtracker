@@ -5,7 +5,7 @@ A small NextJS app written in TypeScript to display some data for near-earth obj
 Uses NeoWs API from:
 https://api.nasa.gov/
 
-(./demo.gif)
+![Demo](./demo.gif)
 
 To run, clone down the repo and run:
 ```
