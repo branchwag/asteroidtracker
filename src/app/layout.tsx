@@ -5,8 +5,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Asteroids App',
-  description: 'A space-themed asteroids app with a starry background',
+  title: 'Near Earth Objects',
+  description: 'An app to track near-earth objects using data from NASA',
 };
 
 export default function RootLayout({

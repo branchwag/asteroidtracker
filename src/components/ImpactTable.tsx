@@ -7,25 +7,22 @@ interface ImpactTableProps {
 
 const ImpactTable: React.FC<ImpactTableProps> = ({ headers, rows }) => {
 	return (
-		<div className="overflow-x-auto rounded-2xl shadow-lg bg-black p-4">
-			<table className="min-w-full text-sm text-left text-white">
-				<thead className="text-xs uppercase bg-zinc-900 text-gray-400">
+		<div className="overflow-x-auto w-full max-w-4xl mx-auto mt-8">
+			<table className="min-w-full bg-black text-white border border-gray-700 rounded-lg shadow-lg">
+				<thead>
 					<tr>
 						{headers.map((header, idx) => (
-							<th key={idx} className="px-6 py-3">
+							<th key={idx} className="px-4 py-2 border-b border-gray-700 text-left">
 								{header}
 							</th>
 						))}
 					</tr>
 				</thead>
 				<tbody>
-					{rows.map((row, i) => (
-						<tr
-							key={i}
-							className="border-b border-zinc-800 hover:bg-zinc-800 transition duration-150"
-						>
-							{row.map((cell, j) => (
-								<td key={j} className="px-6 py-4 whitespace-nowrap text-gray-200">
+					{rows.map((row, rowIdx) => (
+						<tr key={rowIdx} className="hover:bg-gray-800">
+							{row.map((cell, cellIdx) => (
+								<td key={cellIdx} className="px-4 py-2 border-b border-gray-700">
 									{cell}
 								</td>
 							))}
