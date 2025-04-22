@@ -41,13 +41,15 @@ export default function Home() {
     fetchData();
   }, []);
 
+  //console.log(nearEarthObjects);
+
   // Prepare data for ImpactTable
-  const headers = ["Name", "Diameter (m)", "Close Approach", "Potentially Hazardous"];
+  const headers = ["Name", "Diameter (m)", "Relative Velocity", "Potentially Hazardous"];
   const tableRows = !loading && !error && nearEarthObjects.length > 0
     ? nearEarthObjects.map(obj => [
       obj.name,
       `${Math.round(obj.estimated_diameter?.meters?.estimated_diameter_min || 0)} - ${Math.round(obj.estimated_diameter?.meters?.estimated_diameter_max || 0)}`,
-      new Date(obj.close_approach_data?.[0]?.close_approach_date_full || new Date()).toLocaleString(),
+      obj.close_approach_data?.[0]?.relative_velocity.kilometers_per_hour || "no data",
       obj.is_potentially_hazardous_asteroid ? "YES" : "No"
     ])
     : [];
@@ -58,7 +60,7 @@ export default function Home() {
       <div className="z-10 text-white typewriter-font">
         <h1 className="text-4xl font-bold mb-8 typewriter-font">Asteroid Tracker</h1>
         <p className="text-xl typewriter-font">Welcome to the universe!</p>
-        <p className="text-sm mt-4 typewriter-font">The nearest objects to Earth are below:</p>
+        <p className="text-sm mt-4 typewriter-font">Near-earth objects are below:</p>
 
         {loading && (
           <p className="mt-6 text-center typewriter-font">Loading asteroid data...</p>
