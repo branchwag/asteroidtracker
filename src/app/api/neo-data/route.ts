@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
 	try {
-		const apiKey = process.env.NASA_API_KEY || 'DEMO_KEY';
+		const apiKey = process.env.NASA_API_KEY;
 		const startDate = new Date().toISOString().split('T')[0];
 		const endDate = startDate;
 
