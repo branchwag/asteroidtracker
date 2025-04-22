@@ -44,9 +44,30 @@ const EnhancedStarryBackground: React.FC = () => {
 		renderer.setClearColor(0x000000); // Pure black background
 		currentRef.appendChild(renderer.domElement);
 
-		// Create stars with different sizes
+		const createCircleTexture = (): THREE.Texture => {
+			const size = 64;
+			const canvas = document.createElement('canvas');
+			canvas.width = size;
+			canvas.height = size;
+
+			const ctx = canvas.getContext('2d');
+			if (!ctx) throw new Error('Canvas 2D context not supported.');
+
+			ctx.beginPath();
+			ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+			ctx.fillStyle = 'white';
+			ctx.fill();
+
+			const texture = new THREE.CanvasTexture(canvas);
+			texture.minFilter = THREE.LinearFilter;
+			texture.magFilter = THREE.LinearFilter;
+			texture.format = THREE.RGBAFormat;
+			return texture;
+		};
+
 		const createStars = (): THREE.Group => {
 			const stars = new THREE.Group();
+			const starTexture = createCircleTexture();
 
 			// Small stars (background)
 			const smallStarGeometry = new THREE.BufferGeometry();
@@ -54,12 +75,15 @@ const EnhancedStarryBackground: React.FC = () => {
 				color: 0xffffff,
 				size: 0.5,
 				transparent: true,
+				map: starTexture,
+				alphaTest: 0.1,
+				depthWrite: false,
 			});
 
 			const smallStarVertices: number[] = [];
 			const smallStarOpacities: number[] = [];
 
-			for (let i = 0; i < 15000; i++) { // Increased from 5000 to 15000
+			for (let i = 0; i < 15000; i++) {
 				const x = (Math.random() - 0.5) * 2000;
 				const y = (Math.random() - 0.5) * 2000;
 				const z = (Math.random() - 0.5) * 2000;
@@ -82,12 +106,15 @@ const EnhancedStarryBackground: React.FC = () => {
 				color: 0xeeeeff,
 				size: 0.1,
 				transparent: true,
+				map: starTexture,
+				alphaTest: 0.1,
+				depthWrite: false,
 			});
 
 			const mediumStarVertices: number[] = [];
 			const mediumStarOpacities: number[] = [];
 
-			for (let i = 0; i < 7500; i++) { // Increased from 2500 to 7500
+			for (let i = 0; i < 7500; i++) {
 				const x = (Math.random() - 0.5) * 1500;
 				const y = (Math.random() - 0.5) * 1500;
 				const z = (Math.random() - 0.5) * 1500;
@@ -110,11 +137,14 @@ const EnhancedStarryBackground: React.FC = () => {
 				color: 0xffffff,
 				size: 0.15,
 				transparent: true,
+				map: starTexture,
+				alphaTest: 0.1,
+				depthWrite: false,
 			});
 
 			const largeStarVertices: number[] = [];
 			const opacities: number[] = [];
-			for (let i = 0; i < 3000; i++) { // Increased from 1000 to 3000
+			for (let i = 0; i < 3000; i++) {
 				const x = (Math.random() - 0.5) * 1000;
 				const y = (Math.random() - 0.5) * 1000;
 				const z = (Math.random() - 0.5) * 1000;
