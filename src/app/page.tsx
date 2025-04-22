@@ -16,7 +16,8 @@ export default function Home() {
       <div className="z-10 text-white typewriter-font">
         <h1 className="text-4xl font-bold mb-8 typewriter-font">Asteroid Tracker</h1>
         <p className="text-xl typewriter-font">Welcome to the universe!</p>
-        <p className="text-sm mt-4 typewriter-font">[Under construction - info will be displayed here]</p>
+        <p className="text-sm mt-4 typewriter-font">The nearest objects to Earth are below:
+          [table]</p>
       </div>
     </main>
   );
