@@ -44,12 +44,15 @@ export default function Home() {
   //console.log(nearEarthObjects);
 
   // Prepare data for ImpactTable
-  const headers = ["Name", "Diameter (m)", "Relative Velocity", "Potentially Hazardous"];
+  const headers = ["Name", "Diameter (m)", "Relative Velocity (km/h)", "Potentially Hazardous"];
   const tableRows = !loading && !error && nearEarthObjects.length > 0
     ? nearEarthObjects.map(obj => [
       obj.name,
       `${Math.round(obj.estimated_diameter?.meters?.estimated_diameter_min || 0)} - ${Math.round(obj.estimated_diameter?.meters?.estimated_diameter_max || 0)}`,
-      obj.close_approach_data?.[0]?.relative_velocity.kilometers_per_hour || "no data",
+      new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(Number(obj.close_approach_data?.[0]?.relative_velocity.kilometers_per_hour || 0)),
       obj.is_potentially_hazardous_asteroid ? "YES" : "No"
     ])
     : [];
@@ -60,7 +63,16 @@ export default function Home() {
       <div className="z-10 text-white typewriter-font">
         <h1 className="text-4xl font-bold mb-8 typewriter-font">Asteroid Tracker</h1>
         <p className="text-xl typewriter-font">Welcome to the universe!</p>
-        <p className="text-sm mt-4 typewriter-font">Near-earth objects are below:</p>
+        <p className="text-sm mt-4 typewriter-font">Near-earth objects are listed below. All data is from{' '}
+          <a
+            href="https://api.nasa.gov/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-blue-400 hover:text-blue-200"
+          >
+            https://api.nasa.gov/
+          </a>
+        </p>
 
         {loading && (
           <p className="mt-6 text-center typewriter-font">Loading asteroid data...</p>
