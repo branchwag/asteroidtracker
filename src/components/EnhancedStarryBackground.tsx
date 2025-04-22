@@ -69,19 +69,44 @@ const EnhancedStarryBackground: React.FC = () => {
 		): THREE.Points => {
 			const geometry = new THREE.BufferGeometry();
 			const starTexture = createCircleTexture();
-			const material = new THREE.PointsMaterial({
-				color,
-				size,
+			const material = new THREE.ShaderMaterial({
+				uniforms: {
+					uTime: { value: 0 },
+					uTexture: { value: starTexture },
+				},
+				vertexShader: `
+					attribute float aOpacity;
+					attribute float aTwinkleSpeed;
+					attribute float aTwinkleOffset;
+
+					varying float vOpacity;
+					uniform float uTime;
+					
+					void main() {
+						float twinkle = sin(uTime * aTwinkleSpeed + aTwinkleOffset);
+						vOpacity = aOpacity + twinkle * 0.5;
+
+						gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+						gl_PointSize = 1.5;
+					}
+				`,
+				fragmentShader: `
+					uniform sampler2D uTexture;
+					varying float vOpacity;
+
+					void main() {
+						vec4 texColor = texture2D(uTexture, gl_PointCoord);
+						gl_FragColor = vec4(texColor.rgb, texColor.a * vOpacity);
+					}
+				`,
 				transparent: true,
-				map: starTexture,
-				alphaTest: 0.1,
-				depthWrite: false,
+				depthWrite: false
 			});
 
 			const vertices: number[] = [];
-			const baseOpacities: number[] = [];
-			const twinkleSpeeds: number[] = [];
-			const twinkleOffsets: number[] = [];
+			const aOpacity: number[] = [];
+			const aTwinkleSpeed: number[] = [];
+			const aTwinkleOffset: number[] = [];
 
 			for (let i = 0; i < count; i++) {
 				vertices.push(
@@ -89,18 +114,21 @@ const EnhancedStarryBackground: React.FC = () => {
 					(Math.random() - 0.5) * spread,
 					(Math.random() - 0.5) * spread
 				);
-				baseOpacities.push(Math.random() * 0.5 + 0.5);
-				twinkleSpeeds.push(Math.random() * (speedMax - speedMin) + speedMin);
-				twinkleOffsets.push(Math.random() * Math.PI * 2);
+				aOpacity.push(Math.random() * 0.5 + 0.5);
+				aTwinkleSpeed.push(Math.random() * (speedMax - speedMin) + speedMin);
+				aTwinkleOffset.push(Math.random() * Math.PI * 2);
 			}
 
 			geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+			geometry.setAttribute('aOpacity', new THREE.Float32BufferAttribute(aOpacity, 1));
+			geometry.setAttribute('aTwinkleSpeed', new THREE.Float32BufferAttribute(aTwinkleSpeed, 1));
+			geometry.setAttribute('aTwinkleOffset', new THREE.Float32BufferAttribute(aTwinkleOffset, 1));
 
 			const stars = new THREE.Points(geometry, material);
 			stars.userData = {
-				baseOpacities,
-				twinkleSpeeds,
-				twinkleOffsets,
+				aOpacity,
+				aTwinkleSpeed,
+				aTwinkleOffset,
 				amplitude,
 			};
 
@@ -111,22 +139,22 @@ const EnhancedStarryBackground: React.FC = () => {
 			const group = new THREE.Group();
 
 			const smallStars = createStarLayer(
-				15000,
+				1500,
 				0xffffff,
 				0.6,
 				2000,
-				0.000001,
-				0.000005,
-				0.005 // Even more subtle twinkle
+				0.001,
+				0.005,
+				0.05
 			);
 
 			const mediumStars = createStarLayer(
-				7500,
+				750,
 				0xeeeeff,
 				0.8,
 				1500,
-				0.00001,
-				0.00005,
+				0.01,
+				0.05,
 				0.03
 			);
 
@@ -135,8 +163,8 @@ const EnhancedStarryBackground: React.FC = () => {
 				0xffffff,
 				0.15,
 				1000,
-				0.00005,
-				0.0001,
+				0.005,
+				0.01,
 				0.2
 			);
 
@@ -198,29 +226,8 @@ const EnhancedStarryBackground: React.FC = () => {
 			}
 
 			for (const starLayer of stars.children) {
-				if (starLayer instanceof THREE.Points) {
-					const {
-						baseOpacities,
-						twinkleSpeeds,
-						twinkleOffsets,
-						amplitude
-					} = starLayer.userData as {
-						baseOpacities: number[];
-						twinkleSpeeds: number[];
-						twinkleOffsets: number[];
-						amplitude: number;
-					};
-
-					if (starLayer.material instanceof THREE.PointsMaterial) {
-						const opacities = baseOpacities.map((base, i) => {
-							const speed = twinkleSpeeds[i];
-							const offset = twinkleOffsets[i];
-							return base + Math.sin(time * speed + offset) * amplitude;
-						});
-
-						const avgOpacity = opacities.reduce((sum, o) => sum + o, 0) / opacities.length;
-						starLayer.material.opacity = avgOpacity;
-					}
+				if (starLayer instanceof THREE.Points && starLayer.material instanceof THREE.ShaderMaterial) {
+					starLayer.material.uniforms.uTime.value = time * 0.001;	//ms to s
 				}
 			}
 
