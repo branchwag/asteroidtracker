@@ -10,9 +10,7 @@ pub fn StarryBackground() -> impl IntoView {
     });
 
     view! {
-        <div class="starry-background">
-            <canvas node_ref=canvas_ref class="starry-canvas" />
-        </div>
+        <canvas node_ref=canvas_ref class="starry-canvas" />
     }
 }
 

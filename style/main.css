@@ -20,17 +20,12 @@ a { color: inherit; }
 }
 
 /* Starry background — fixed behind all content via z-index 0; content sits above. */
-.starry-background {
+.starry-canvas {
     position: fixed;
     inset: 0;
     z-index: 0;
     pointer-events: none;
-}
-
-.starry-canvas {
     display: block;
-    width: 100%;
-    height: 100%;
 }
 
 /* Page layout */
