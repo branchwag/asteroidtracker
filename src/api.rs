@@ -1,6 +1,16 @@
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "ssr")]
+use std::{
+    collections::HashMap,
+    sync::{LazyLock, Mutex},
+};
+
+#[cfg(feature = "ssr")]
+static CACHE: LazyLock<Mutex<HashMap<String, Vec<NearEarthObject>>>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NearEarthObject {
     pub name: String,
@@ -32,12 +42,16 @@ pub struct RelativeVelocity {
 
 #[server(GetNeoData, "/api")]
 pub async fn get_neo_data() -> Result<Vec<NearEarthObject>, ServerFnError> {
-    let api_key = std::env::var("NASA_API_KEY").unwrap_or_else(|_| "DEMO_KEY".to_string());
     let today = chrono::Local::now()
         .date_naive()
         .format("%Y-%m-%d")
         .to_string();
 
+    if let Some(cached) = CACHE.lock().unwrap().get(&today).cloned() {
+        return Ok(cached);
+    }
+
+    let api_key = std::env::var("NASA_API_KEY").unwrap_or_else(|_| "DEMO_KEY".to_string());
     let url = format!(
         "https://api.nasa.gov/neo/rest/v1/feed?start_date={today}&end_date={today}&api_key={api_key}"
     );
@@ -68,6 +82,10 @@ pub async fn get_neo_data() -> Result<Vec<NearEarthObject>, ServerFnError> {
                 .collect::<Vec<NearEarthObject>>()
         })
         .unwrap_or_default();
+
+    if !neos.is_empty() {
+        CACHE.lock().unwrap().insert(today, neos.clone());
+    }
 
     Ok(neos)
 }
