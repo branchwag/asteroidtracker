@@ -1,13 +1,26 @@
-# Near Earth Object Displayer
+# Asteroid Tracker
 
-A small NextJS app written in TypeScript to display some data for near-earth objects.
+A small full-stack Rust web app that displays near-earth object data from NASA. Built with [Leptos](https://leptos.dev/) (SSR + WebAssembly hydration) on top of axum, with a custom WebGL2 starfield rendered via `web-sys`.
 
 Uses NeoWs API from:
 https://api.nasa.gov/
 
 ![Demo](./demo.gif)
 
-To run, clone down the repo and run:
+## Running
+
+Requirements: Rust 1.85+ (uses edition 2024), the `wasm32-unknown-unknown` target, and [`cargo-leptos`](https://github.com/leptos-rs/cargo-leptos).
+
 ```
-npm run dev
+rustup target add wasm32-unknown-unknown
+cargo install cargo-leptos
+cargo leptos serve
 ```
+
+Then open http://127.0.0.1:3000/.
+
+## NASA API key
+
+`.env.local` ships with `NASA_API_KEY=DEMO_KEY` so the app runs out of the box. The demo key is limited to ~30 requests/hour per IP; for higher limits, get a free key at https://api.nasa.gov/ and replace the value.
+
+The server caches successful responses in memory keyed by date, so it only hits the NASA API once per day per process.
