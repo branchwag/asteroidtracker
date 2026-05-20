@@ -1,0 +1,101 @@
+/* Global */
+html {
+    background: #000;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    color: #ededed;
+    font-family: Arial, Helvetica, sans-serif;
+    min-height: 100vh;
+}
+
+a { color: inherit; }
+
+.typewriter-font {
+    font-family: 'Special Elite', monospace;
+    letter-spacing: 1px;
+}
+
+/* Starry background — fixed behind all content via z-index 0; content sits above. */
+.starry-background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.starry-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* Page layout */
+.page {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 100vh;
+    padding: 6rem;
+}
+
+.content {
+    position: relative;
+    z-index: 2;
+}
+
+/* Utility classes (subset of Tailwind used by the markup) */
+.z-10 { z-index: 10; }
+
+.text-white { color: #fff; }
+.text-red-500 { color: #ef4444; }
+.text-blue-400 { color: #60a5fa; }
+.hover-text-blue-200:hover { color: #bfdbfe; }
+
+.text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+.text-xl  { font-size: 1.25rem; line-height: 1.75rem; }
+.text-sm  { font-size: 0.875rem; line-height: 1.25rem; }
+
+.font-bold { font-weight: 700; }
+.underline { text-decoration: underline; }
+
+.mb-8 { margin-bottom: 2rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }
+.mt-8 { margin-top: 2rem; }
+
+.mx-auto { margin-left: auto; margin-right: auto; }
+
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+
+.w-full        { width: 100%; }
+.max-w-4xl     { max-width: 56rem; }
+.min-w-full    { min-width: 100%; }
+.overflow-x-auto { overflow-x: auto; }
+
+.text-center { text-align: center; }
+.text-left   { text-align: left; }
+
+.bg-black       { background-color: #000; }
+.border         { border: 1px solid; }
+.border-b       { border-bottom: 1px solid; }
+.border-gray-700 { border-color: #374151; }
+.rounded-lg     { border-radius: 0.5rem; }
+.shadow-lg {
+    box-shadow:
+        0 10px 15px -3px rgba(0, 0, 0, 0.3),
+        0 4px 6px -4px rgba(0, 0, 0, 0.3);
+}
+
+.row-hover:hover td { background-color: #1f2937; }
+
+table {
+    border-collapse: collapse;
+}
