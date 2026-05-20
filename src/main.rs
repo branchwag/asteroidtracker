@@ -9,7 +9,7 @@ async fn main() {
     let _ = dotenvy::from_filename(".env.local");
     let _ = dotenvy::dotenv();
 
-    let conf = get_configuration(None).unwrap();
+    let conf = get_configuration(None).expect("failed to load leptos configuration");
     let leptos_options = conf.leptos_options;
     let addr = leptos_options.site_addr;
     let routes = generate_route_list(App);
@@ -22,11 +22,13 @@ async fn main() {
         .fallback(leptos_axum::file_and_error_handler(shell))
         .with_state(leptos_options);
 
-    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
+    let listener = tokio::net::TcpListener::bind(&addr)
+        .await
+        .unwrap_or_else(|e| panic!("failed to bind to {addr}: {e}"));
     println!("listening on http://{addr}");
     axum::serve(listener, app.into_make_service())
         .await
-        .unwrap();
+        .expect("axum server crashed");
 }
 
 #[cfg(not(feature = "ssr"))]
