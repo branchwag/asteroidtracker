@@ -81,9 +81,11 @@ fn HomePage() -> impl IntoView {
                             Ok(neos) if !neos.is_empty() => {
                                 let headers = vec![
                                     "Name".to_string(),
+                                    "Approach Date (UTC)".to_string(),
                                     "Diameter (m)".to_string(),
-                                    "Relative Velocity (km/h)".to_string(),
-                                    "Potentially Hazardous".to_string(),
+                                    "Velocity (km/h)".to_string(),
+                                    "Miss Distance (LD)".to_string(),
+                                    "Hazardous".to_string(),
                                 ];
                                 let rows: Vec<Vec<String>> = neos
                                     .iter()
@@ -98,20 +100,27 @@ fn HomePage() -> impl IntoView {
                                             .meters
                                             .estimated_diameter_max
                                             .round() as i64;
-                                        let velocity = obj
-                                            .close_approach_data
-                                            .first()
-                                            .and_then(|ca| {
-                                                ca.relative_velocity
+                                        let ca = obj.close_approach_data.first();
+                                        let approach = ca
+                                            .map(|c| c.close_approach_date_full.clone())
+                                            .unwrap_or_default();
+                                        let velocity = ca
+                                            .and_then(|c| {
+                                                c.relative_velocity
                                                     .kilometers_per_hour
                                                     .parse::<f64>()
                                                     .ok()
                                             })
                                             .unwrap_or(0.0);
+                                        let miss_lunar = ca
+                                            .map(|c| format_lunar(&c.miss_distance.lunar))
+                                            .unwrap_or_default();
                                         vec![
                                             obj.name.clone(),
+                                            approach,
                                             format!("{dmin} - {dmax}"),
                                             format_with_commas(velocity),
+                                            miss_lunar,
                                             if obj.is_potentially_hazardous_asteroid {
                                                 "YES".to_string()
                                             } else {
@@ -145,6 +154,13 @@ fn HomePage() -> impl IntoView {
             </div>
         </main>
     }
+}
+
+fn format_lunar(value: &str) -> String {
+    value
+        .parse::<f64>()
+        .map(|v| format!("{v:.2}"))
+        .unwrap_or_else(|_| value.to_string())
 }
 
 fn format_with_commas(value: f64) -> String {
