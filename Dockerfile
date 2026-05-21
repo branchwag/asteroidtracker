@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.7
-
 # ---- Build stage ----
 FROM rust:1.90-slim AS builder
 
@@ -17,8 +15,6 @@ WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 COPY style ./style
-COPY public ./public
-
 RUN cargo leptos build --release
 
 
