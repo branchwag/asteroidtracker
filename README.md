@@ -2,6 +2,8 @@
 
 A small full-stack Rust web app that displays near-earth object data from NASA. Built with [Leptos](https://leptos.dev/) (SSR + WebAssembly hydration) on top of axum, with a custom WebGL2 starfield rendered via `web-sys`.
 
+Lists the next 7 days of near-earth approaches in a sortable table — click any column header (`Name`, `Approach Date`, `Diameter`, `Velocity`, `Miss Distance`, `Hazardous`) to sort ascending; click again to flip to descending.
+
 Uses NeoWs API from:
 https://api.nasa.gov/
 
