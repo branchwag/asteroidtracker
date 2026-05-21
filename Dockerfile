@@ -27,17 +27,19 @@ FROM debian:bookworm-slim AS runtime
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin app
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/asteroidtracker /app/asteroidtracker
-COPY --from=builder /app/target/site /app/site
+COPY --from=builder --chown=app:app /app/target/release/asteroidtracker /app/asteroidtracker
+COPY --from=builder --chown=app:app /app/target/site /app/site
 
 ENV LEPTOS_SITE_ROOT=/app/site \
     LEPTOS_SITE_ADDR=0.0.0.0:3000 \
     NASA_API_KEY=DEMO_KEY
 
+USER app
 EXPOSE 3000
 
 CMD ["/app/asteroidtracker"]
