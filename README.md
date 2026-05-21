@@ -7,7 +7,23 @@ https://api.nasa.gov/
 
 ![Demo](./demo.gif)
 
-## Running
+## Running with Docker (recommended)
+
+Requires Docker (Docker Desktop includes everything you need).
+
+```
+docker compose up --build
+```
+
+Then open http://localhost:3000/.
+
+To use your own NASA API key, create a `.env` file in the project root:
+
+```
+NASA_API_KEY=your_key_here
+```
+
+## Running with cargo
 
 Requirements: Rust 1.85+ (uses edition 2024), the `wasm32-unknown-unknown` target, and [`cargo-leptos`](https://github.com/leptos-rs/cargo-leptos).
 

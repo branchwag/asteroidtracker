@@ -1,0 +1,12 @@
+target/
+.git/
+.gitignore
+node_modules/
+.env
+.env.local
+.next/
+*.md
+demo.gif
+Dockerfile
+.dockerignore
+docker-compose.yml

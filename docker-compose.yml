@@ -1,0 +1,8 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NASA_API_KEY: ${NASA_API_KEY:-DEMO_KEY}
+    restart: unless-stopped
