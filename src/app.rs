@@ -6,7 +6,7 @@ use leptos_router::{
 };
 
 use crate::api::get_neo_data;
-use crate::components::{ImpactTable, StarryBackground};
+use crate::components::{Cell, ImpactTable, StarryBackground};
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {
@@ -87,7 +87,7 @@ fn HomePage() -> impl IntoView {
                                     "Miss Distance (LD)".to_string(),
                                     "Hazardous".to_string(),
                                 ];
-                                let rows: Vec<Vec<String>> = neos
+                                let rows: Vec<Vec<Cell>> = neos
                                     .iter()
                                     .map(|obj| {
                                         let dmin = obj
@@ -101,9 +101,12 @@ fn HomePage() -> impl IntoView {
                                             .estimated_diameter_max
                                             .round() as i64;
                                         let ca = obj.close_approach_data.first();
-                                        let approach = ca
+                                        let approach_display = ca
                                             .map(|c| c.close_approach_date_full.clone())
                                             .unwrap_or_default();
+                                        let approach_epoch = ca
+                                            .map(|c| c.epoch_date_close_approach)
+                                            .unwrap_or(0);
                                         let velocity = ca
                                             .and_then(|c| {
                                                 c.relative_velocity
@@ -113,19 +116,35 @@ fn HomePage() -> impl IntoView {
                                             })
                                             .unwrap_or(0.0);
                                         let miss_lunar = ca
-                                            .map(|c| format_lunar(&c.miss_distance.lunar))
-                                            .unwrap_or_default();
+                                            .and_then(|c| c.miss_distance.lunar.parse::<f64>().ok())
+                                            .unwrap_or(0.0);
+                                        let hazardous_display = if obj
+                                            .is_potentially_hazardous_asteroid
+                                        {
+                                            "YES"
+                                        } else {
+                                            "No"
+                                        };
+                                        let hazardous_key = if obj
+                                            .is_potentially_hazardous_asteroid
+                                        {
+                                            1.0
+                                        } else {
+                                            0.0
+                                        };
                                         vec![
-                                            obj.name.clone(),
-                                            approach,
-                                            format!("{dmin} - {dmax}"),
-                                            format_with_commas(velocity),
-                                            miss_lunar,
-                                            if obj.is_potentially_hazardous_asteroid {
-                                                "YES".to_string()
-                                            } else {
-                                                "No".to_string()
-                                            },
+                                            Cell::text(obj.name.clone()),
+                                            Cell::number(approach_display, approach_epoch as f64),
+                                            Cell::number(
+                                                format!("{dmin} - {dmax}"),
+                                                dmin as f64,
+                                            ),
+                                            Cell::number(
+                                                format_with_commas(velocity),
+                                                velocity,
+                                            ),
+                                            Cell::number(format!("{miss_lunar:.2}"), miss_lunar),
+                                            Cell::number(hazardous_display, hazardous_key),
                                         ]
                                     })
                                     .collect();
@@ -154,13 +173,6 @@ fn HomePage() -> impl IntoView {
             </div>
         </main>
     }
-}
-
-fn format_lunar(value: &str) -> String {
-    value
-        .parse::<f64>()
-        .map(|v| format!("{v:.2}"))
-        .unwrap_or_else(|_| value.to_string())
 }
 
 fn format_with_commas(value: f64) -> String {

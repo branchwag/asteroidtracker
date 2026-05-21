@@ -94,3 +94,16 @@ a { color: inherit; }
 table {
     border-collapse: collapse;
 }
+
+.sort-header {
+    cursor: pointer;
+    user-select: none;
+}
+.sort-header:hover {
+    background-color: #1f2937;
+}
+.sort-indicator {
+    margin-left: 0.35em;
+    font-size: 0.8em;
+    opacity: 0.55;
+}
